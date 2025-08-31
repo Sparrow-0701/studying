@@ -32,7 +32,7 @@ def get_trading_intensity(ticker, prd=period):
     high = data['Close'][-365:].max()
     drawdown = (latest_price - high)/high * 100
     
-    #눌림매수
+    #반등 매매
     #RSI
     if latest_data['rsi_14'] <= 25:
         buy_score['rsi'] += 100
@@ -40,6 +40,8 @@ def get_trading_intensity(ticker, prd=period):
         buy_score['rsi'] += 60
     elif latest_data['rsi_14'] <= 35:
         buy_score['rsi'] += 40
+    elif latest_data['rsi_14'] <= 40:
+        buy_score['rsi'] += 20
     
     #낙폭
     if drawdown <= -20:
@@ -57,9 +59,13 @@ def get_trading_intensity(ticker, prd=period):
     elif latest_price >= latest_data['SMA_100'] and latest_price <= latest_data['SMA_50']:
         buy_score['sma'] += 80
     
+    #역배열 이평선일 경우
+    if latest_price <= latest_data['SMA_20']<= latest_data['SMA_50']<= latest_data['SMA_100']:
+        buy_score['sma'] -= 120
+    
     return buy_score
 
-ticker=st.text_input("분석할 티커를 입력하세요: ")
+ticker=st.text_input("분석할 티커를 입력하세요(한국 주식 예시:486450.KS): ")
 
 if st.button:
     if ticker:
