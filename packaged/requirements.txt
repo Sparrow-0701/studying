@@ -1,0 +1,8 @@
+# requirements.txt
+yfinance
+matplotlib
+numpy
+pandas
+pandas_ta
+datetime
+streamlit
