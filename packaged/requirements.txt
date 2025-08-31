@@ -1,8 +1,8 @@
 # requirements.txt
-yfinance
-matplotlib
-numpy
-pandas
-pandas_ta
-datetime
+
 streamlit
+yfinance
+pandas
+pandas-ta
+datetime
+numpy==1.26.4
