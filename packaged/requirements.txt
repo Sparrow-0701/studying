@@ -5,4 +5,5 @@ yfinance
 pandas
 pandas-ta
 datetime
+matplotlib
 numpy==1.26.4
