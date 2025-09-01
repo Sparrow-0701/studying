@@ -82,8 +82,8 @@ if st.button('검색'):
         col, col2 = st.columns(2)
         with col:
             st.write(f'총점: {total}점')
-            st.write(f'일간변동률: {dailyChange.iloc[-1].to_numpy()*100[0]:.2f}%')
-            st.write(f'누적변동률: {cumChange.iloc[-1].to_numpy()*100[0]:.2f}%')
+            st.write(f'일간변동률: {dailyChange.iloc[-1]*100:.2f}%')
+            st.write(f'누적변동률: {cumChange.iloc[-1]*100:.2f}%')
         with col2:
             st.write('세부 점수:')
             st.json(result)
