@@ -63,7 +63,7 @@ def get_trading_intensity(ticker,start_date):
     if latest_price <= latest_data['SMA_20']<= latest_data['SMA_50']<= latest_data['SMA_100']:
         buy_score['sma'] -= 120
     
-    return buy_score,dailyChange, cumChange
+    return buy_score, dailyChange, cumChange
 
 ticker=st.text_input("분석할 티커를 입력하세요(한국 주식 예시:486450.KS): ")
 period_days = st.number_input("분석 기간 (일): ")
@@ -82,8 +82,8 @@ if st.button('검색'):
         col, col2 = st.columns(2)
         with col:
             st.write(f'총점: {total}점')
-            st.write(f'일간변동률: {dailyChange.iloc[-1]:.2f}')
-            st.write(f'누적변동률: {cumChange.iloc[-1]:.2f}')
+            st.write(f'일간변동률: {dailyChange.iloc[-1]}')
+            st.write(f'누적변동률: {cumChange.iloc[-1]}')
         with col2:
             st.write('세부 점수:')
             st.json(result)
