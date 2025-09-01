@@ -6,18 +6,18 @@ import pandas_ta as ta
 import datetime as dt
 import streamlit as st
 
-today=dt.datetime.now().date()
-period=today - dt.timedelta(days=700)
-
-def get_trading_intensity(ticker, prd=period):
-    data = yf.download(ticker, start=prd, progress=False, auto_adjust=True)
+def get_trading_intensity(ticker,start_date):
+    data = yf.download(ticker,start=start_date, progress=False, auto_adjust=True)
+    
+    dailyChange = data['Close'].pct_change() #변동률
+    cumChange = (1 + dailyChange).cumprod() - 1 #누적 변동률
     
     if isinstance(data.columns, pd.MultiIndex):
         data.columns = data.columns.droplevel(1)
         
     if data.empty:
         st.error(f"'{ticker}'에 대한 데이터를 가져오는 데 실패했습니다. 티커를 확인해 주세요.")
-        return None
+        return None, None, None
     
     data.ta.sma(length=5, append=True)
     data.ta.sma(length=20, append=True)
@@ -63,13 +63,18 @@ def get_trading_intensity(ticker, prd=period):
     if latest_price <= latest_data['SMA_20']<= latest_data['SMA_50']<= latest_data['SMA_100']:
         buy_score['sma'] -= 120
     
-    return buy_score
+    return buy_score,dailyChange, cumChange
 
 ticker=st.text_input("분석할 티커를 입력하세요(한국 주식 예시:486450.KS): ")
+period_days = st.number_input("분석 기간 (일): ")
 
-if st.button:
+if st.button('검색'):
+    today=dt.datetime.now().date()
+    period=today - dt.timedelta(days=period_days)
+    
     if ticker:
-        result = get_trading_intensity(ticker)
+        result,dailyChange,cumChange = get_trading_intensity(ticker,period)
+    
         total = sum(result.values())
         
         st.subheader(f"{ticker.upper()}의 매수 강도 지표")
@@ -77,6 +82,8 @@ if st.button:
         col, col2 = st.columns(2)
         with col:
             st.write(f'총점: {total}점')
+            st.write(f'일간변동률: {dailyChange.iloc[-1]:.2f}')
+            st.write(f'누적변동률: {cumChange.iloc[-1]:.2f}')
         with col2:
             st.write('세부 점수:')
             st.json(result)
