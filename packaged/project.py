@@ -65,6 +65,20 @@ def get_trading_intensity(ticker,start_date):
     
     return buy_score, dailyChange, cumChange
 
+
+# Streamlit
+st.set_page_config(layout="wide")
+
+if 'history' not in st.session_state:
+    st.session_state.history = []
+
+st.sidebar.header("최근 검색 기록")
+if not st.session_state.history:
+    st.sidebar.write("검색 기록이 없습니다.")
+else:
+    for item in st.session_state.history:
+        st.sidebar.write(item)
+
 ticker=st.text_input("분석할 티커를 입력하세요(한국 주식 예시:486450.KS): ")
 period_days = st.number_input("분석 기간 (일): ")
 
@@ -78,6 +92,9 @@ if st.button('검색'):
         total = sum(result.values())
         
         st.subheader(f"{ticker.upper()}의 매수 강도 지표")
+        
+        if ticker not in st.session_state.history:
+                st.session_state.history.insert(0, ticker)
         
         col, col2 = st.columns(2)
         with col:
