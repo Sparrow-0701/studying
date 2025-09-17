@@ -3,7 +3,7 @@
 streamlit
 yfinance
 pandas
-pandas-ta
+pandas-ta==0.3.14b0
 datetime
 matplotlib
 numpy==1.26.4
