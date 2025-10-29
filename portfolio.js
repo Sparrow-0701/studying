@@ -26,4 +26,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+    const mainImage = document.getElementById('project-main-image');
+    const thumbnails = document.querySelectorAll('.project-thumb');
+
+    thumbnails.forEach(thumb => {
+        thumb.addEventListener('click', () => {
+            mainImage.src = thumb.src;
+            thumbnails.forEach(t => {
+                t.classList.remove('border-blue-500');
+                t.classList.add('border-transparent');
+            });
+            thumb.classList.remove('border-transparent');
+            thumb.classList.add('border-blue-500');
+        });
+    });
 });
