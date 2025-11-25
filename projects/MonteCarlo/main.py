@@ -7,7 +7,7 @@ import time
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 
-
+apikey = "BiZdW7mT53NrkMsw9XCYN6bI5brH350y"
 
 # 1. 설정 및 데이터 수집 함수
 #환율 데이터 수집
