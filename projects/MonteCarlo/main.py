@@ -7,6 +7,7 @@ import time
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 
+
 apikey = "BiZdW7mT53NrkMsw9XCYN6bI5brH350y"
 
 # 1. 설정 및 데이터 수집 함수
@@ -130,7 +131,8 @@ def run_monte_carlo(hist_returns, start_price, days, simulations):
 
 
 # 3. Streamlit 
-st.set_page_config(page_title="Risk Defense Navigator", page_icon="🛡️", layout="wide")
+st.set_page_config(page_title="Portfolio Pathfinder", page_icon="🛡️", layout="wide")
+
 
 #사이드바
 with st.sidebar:
@@ -150,7 +152,7 @@ with st.sidebar:
     
     run_btn = st.button("🚀 분석 실행")
 
-st.title("API 활용 실시간 리스크 예측")
+st.title("Portfolio PathFinder")
 st.markdown(f"**대상:** {tickers} | **투자금:** {investment:,}원 | **분석모델:** Monte Carlo Simulation")
 
 tab1, tab2, tab3 = st.tabs(["📊 데이터(Data)", "🔍 통계(Stats)", "🎲 시뮬레이션(VaR)"])
@@ -168,7 +170,7 @@ if run_btn:
     
     if market_df is not None and not market_df.empty:
         
-        # --- 합성 포트폴리오 만들기 ---\
+        # --- 합성 포트폴리오 만들기 ---
         market_df['Portfolio_KRW'] = 0 #가치 칼럼 생성
         weight = investment / len(tickers) # 종목당 배분 금액
         
@@ -217,7 +219,7 @@ if run_btn:
             st.subheader(f"3. 몬테카를로 시뮬레이션 (향후 {forecast_days}일)")
             
             # 일간 수익률 계산
-            daily_returns = market_df['Portfolio_KRW'].pct_change().dropna()
+            daily_returns = np.log(market_df['Portfolio_KRW'] / market_df['Portfolio_KRW'].shift(1)).dropna()
             
             # 현재 포트폴리오 가치 (가장 최근 값)
             current_value = market_df['Portfolio_KRW'].iloc[-1]
@@ -226,7 +228,7 @@ if run_btn:
             with st.spinner(f'{simulations}개의 미래를 생성하는 중...'):
                 sim_paths = run_monte_carlo(daily_returns, current_value, forecast_days, simulations)
             
-            # --- 결과 1: 스파게티 차트 ---
+            # --- 결과 1: 꺾은선 ---
             col1, col2 = st.columns([2, 1])
             
             with col1:
