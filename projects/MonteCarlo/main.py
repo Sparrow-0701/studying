@@ -10,7 +10,6 @@ import matplotlib.ticker as mticker
 
 apikey = "BiZdW7mT53NrkMsw9XCYN6bI5brH350y"
 
-# 1. 설정 및 데이터 수집 함수
 #환율 데이터 수집
 @st.cache_data(ttl=3600)
 def get_exchange_data(start_date, end_date, auth_key):
@@ -101,21 +100,15 @@ def get_merged_market_data(tickers, start, end, auth_key):
 
     merged_df = df_stock.join(df_exchange, how='left')
     merged_df['USD_KRW'] = merged_df['USD_KRW'].ffill()
-    merged_df['USD_KRW'] = merged_df['USD_KRW'].bfill()
     
     return merged_df
 
 
-# 2. 몬테카를로 시뮬레이션 함수
+#몬테카를로 시뮬레이션 함수
 def run_monte_carlo(hist_returns, start_price, days, simulations):
-    """
-    [역사적 부트스트래핑 방식]
-    과거 수익률 분포에서 무작위 복원 추출하여 미래 경로 생성
-    """
-    # size=(days, simulations) -> 미래 날짜 x 시뮬레이션 횟수만큼 뽑기
     random_returns = np.random.choice(hist_returns, size=(days, simulations), replace=True)
     
-    # 누적 수익률 계산
+    # 누적 수익률 계산(로그 수익률 방식)
     cum_returns = np.exp(np.cumsum(random_returns, axis=0))
     
     # 가격 경로 생성
@@ -126,11 +119,8 @@ def run_monte_carlo(hist_returns, start_price, days, simulations):
     return price_paths
 
 
-
 #---------------------------------------UI-------------------------------------------
 
-
-# 3. Streamlit 
 st.set_page_config(page_title="Portfolio Pathfinder", page_icon="🛡️", layout="wide")
 
 
@@ -170,7 +160,7 @@ if run_btn:
     
     if market_df is not None and not market_df.empty:
         
-        # --- 합성 포트폴리오 만들기 ---
+        # 합성 포트폴리오 만들기
         market_df['Portfolio_KRW'] = 0 #가치 칼럼 생성
         weight = investment / len(tickers) # 종목당 배분 금액
         
@@ -184,7 +174,7 @@ if run_btn:
                 
                 market_df['Portfolio_KRW'] += (stock_return * exchange_return * weight) #각 수익률 * 종목당 투자금 --> 가치
         
-        # ---------------- TAB 1: 데이터 시각화 ----------------
+        # ---------------- TAB 1 ----------------
         with tab1:
             st.subheader("1. 원화 환산 포트폴리오 가치 추이")
             st.line_chart(market_df['Portfolio_KRW']) #자산 추이 그래프
@@ -192,17 +182,16 @@ if run_btn:
             st.write("💡 **상세 데이터 (최근 5일)**")
             st.dataframe(market_df.tail()) # 데이터프레임 최근 5일
 
-        # ---------------- TAB 2: 통계 분석 ----------------
+        # ---------------- TAB 2----------------
         with tab2:
             st.subheader("2. 자산 간 상관관계 히트맵")
             
-            # 상관관계 계산 (주가들 + 환율)
             analysis = tickers + ['USD_KRW']
-            # 존재하는 컬럼만 선택  
+            # 존재하는 칼럼만  
             valid_cols = [c for c in analysis if c in market_df.columns]
             corr = market_df[valid_cols].corr()
             
-            # Matplotlib으로 히트맵 그리기
+            #히트맵
             fig, ax = plt.subplots()
             cax = ax.matshow(corr, cmap='coolwarm')
             fig.colorbar(cax)
@@ -214,11 +203,11 @@ if run_btn:
             
             st.info("빨간색에 가까울수록 같이 움직이고, 파란색일수록 반대로 움직입니다.")
 
-        # ---------------- TAB 3: 몬테카를로 & VaR ----------------
+        # ---------------- TAB 3----------------
         with tab3:
             st.subheader(f"3. 몬테카를로 시뮬레이션 (향후 {forecast_days}일)")
             
-            # 일간 수익률 계산
+            # 일간 수익률
             daily_returns = np.log(market_df['Portfolio_KRW'] / market_df['Portfolio_KRW'].shift(1)).dropna()
             
             # 현재 포트폴리오 가치 (가장 최근 값)
@@ -228,7 +217,7 @@ if run_btn:
             with st.spinner(f'{simulations}개의 미래를 생성하는 중...'):
                 sim_paths = run_monte_carlo(daily_returns, current_value, forecast_days, simulations)
             
-            # --- 결과 1: 꺾은선 ---
+            # 꺾은선 
             col1, col2 = st.columns([2, 1])
             
             with col1:
@@ -245,7 +234,7 @@ if run_btn:
                 ax_sim.yaxis.set_major_formatter(mticker.StrMethodFormatter('{x:,.0f}'))
                 st.pyplot(fig_sim)
             
-            # --- 결과 2: VaR 및 통계 ---
+            # VaR
             with col2:
                 # 마지막 날의 자산 가치 분포
                 final_values = sim_paths[-1, :]
@@ -260,8 +249,7 @@ if run_btn:
                 
                 st.markdown("### 📊 분석 결과")
                 st.metric(label="현재 가치", value=f"{int(current_value):,}원")
-                st.metric(label="평균 예상 가치", value=f"{int(mean_value):,}원", 
-                          delta=f"{int(mean_value - current_value):,}원")
+                st.metric(label="평균 예상 가치", value=f"{int(mean_value):,}원",delta=f"{int(mean_value - current_value):,}원")
                 
                 st.divider()
                 st.markdown(f"#### ⚠️ 95% VaR ({forecast_days}일)")
